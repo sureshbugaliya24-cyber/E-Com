@@ -1,0 +1,27 @@
+{
+    "about": {
+        "title": "About Us",
+        "metaDescription": "Learn more about Radhey Jewellers, our heritage, and our commitment to crafting the finest luxury jewellery.",
+        "heading": "Our Heritage",
+        "content1": "For generations, Radhey Jewellers has stood as a beacon of unmatched craftsmanship and timeless elegance.",
+        "content2": "Our master artisans pour their passion and expertise into every intricate detail, ensuring that each piece we offer is not merely an accessory, but a cherished heirloom."
+    },
+    "contact": {
+        "title": "Contact Us",
+        "metaDescription": "Get in touch with Radhey Jewellers. We are here to assist you with any inquiries regarding our collections.",
+        "heading": "Get in Touch",
+        "addressLabel": "Our Boutique",
+        "address": "123 Heritage Lane, Luxury District",
+        "emailLabel": "Email Inquiries",
+        "email": "support@radheyjewellers.com",
+        "phoneLabel": "Phone Support",
+        "phone": "+91 98765 43210"
+    },
+    "terms": {
+        "title": "Terms & Conditions",
+        "metaDescription": "Review the terms and conditions for shopping at Radhey Jewellers.",
+        "heading": "Terms of Service",
+        "content1": "Welcome to Radhey Jewellers. By accessing this website, we assume you accept these terms and conditions. Do not continue to use the website if you do not agree to take all of the terms and conditions stated on this page.",
+        "content2": "All prices and availability are subject to change without notice. We reserve the right to limit quantities."
+    }
+}
