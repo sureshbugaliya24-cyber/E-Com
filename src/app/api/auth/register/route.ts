@@ -27,7 +27,16 @@ export async function POST(req: Request) {
         const token = generateToken({ id: user._id, role: user.role });
 
         const response = NextResponse.json(
-            { message: 'User registered successfully.', user: { id: user._id, name, email, role: user.role } },
+            { 
+                message: 'User registered successfully.', 
+                user: { 
+                    id: user._id, 
+                    name, 
+                    email, 
+                    role: user.role,
+                    addresses: [] 
+                } 
+            },
             { status: 201 }
         );
 

@@ -99,7 +99,7 @@ export default function CheckoutPage() {
                 const data = await res.json();
 
                 // Flush the Redux cart successfully
-                dispatch({ type: 'cart/setItems', payload: [] });
+                dispatch(setCartItems([]));
 
                 // Redirect to success page or clear cart
                 router.push(`/checkout/success?orderId=${data.order._id}`);

@@ -20,8 +20,19 @@ export default function AccountPage() {
         if (!user) {
             router.push('/login');
         } else {
-            // Ideally fetch past orders here
-            setOrders([]);
+            // Fetch past orders
+            const fetchOrders = async () => {
+                try {
+                    const res = await fetch('/api/orders');
+                    if (res.ok) {
+                        const data = await res.json();
+                        setOrders(data.orders || []);
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch orders', err);
+                }
+            };
+            fetchOrders();
         }
     }, [user, router]);
 
@@ -109,8 +120,36 @@ export default function AccountPage() {
                         </div>
 
                         {orders.length > 0 ? (
-                            <div className="space-y-4">
-                                {/* Order cards would map here */}
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                                {orders.map((order: any) => (
+                                    <div key={order._id} className="p-6 rounded-2xl border border-gray-100 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="space-y-2">
+                                            <div className="flex items-center space-x-3">
+                                                <span className="font-bold text-gray-900">Order #{order._id.substring(order._id.length - 6).toUpperCase()}</span>
+                                                <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+                                                    order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' : 
+                                                    order.orderStatus === 'Cancelled' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'
+                                                }`}>
+                                                    {order.orderStatus}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-500">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
+                                            <div className="text-sm text-gray-700 mt-2">
+                                                <span className="font-medium text-gray-900">Items: </span>
+                                                {order.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ')}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col md:items-end space-y-2">
+                                            <p className="text-xl font-bold text-gray-900 border-b border-gray-200 pb-2 md:border-none md:pb-0">
+                                                {/* In a multi-currency app, you would format properly based on currencyAtPurchase */}
+                                                ₹{order.totalAmountINR.toLocaleString('en-IN')}
+                                            </p>
+                                            <button className="text-sm font-medium text-amber-600 hover:text-amber-800 transition-colors flex items-center">
+                                                <Download className="w-4 h-4 mr-1" /> Invoice
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ) : (
                             <div className="text-center py-20">

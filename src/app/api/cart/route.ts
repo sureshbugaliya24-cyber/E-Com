@@ -13,10 +13,22 @@ export async function GET() {
         if (!decoded) return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
 
         await dbConnect();
-        // Populate product details specifically without translating fields in db cart query
+        // Populate product details specifically
         const cart = await Cart.findOne({ userId: decoded.id }).populate('items.productId');
 
-        return NextResponse.json({ cart: cart || { items: [] } }, { status: 200 });
+        if (!cart) {
+            return NextResponse.json({ cart: { items: [] } }, { status: 200 });
+        }
+
+        // Transform items to have both ID and populated object
+        // This satisfies both Redux (needs ID) and Checkout (needs Object)
+        const formattedItems = cart.items.map((item: any) => ({
+            productId: item.productId._id,
+            product: item.productId,
+            quantity: item.quantity
+        }));
+
+        return NextResponse.json({ cart: { items: formattedItems } }, { status: 200 });
     } catch (error: any) {
         return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
     }

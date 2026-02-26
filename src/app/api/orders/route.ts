@@ -26,27 +26,40 @@ export async function POST(req: Request) {
         if (!shippingAddress) return NextResponse.json({ error: 'Shipping address not found.' }, { status: 400 });
 
         // Get Cart Items
-        const cartItems = await Cart.find({ user: decoded.id }).populate('product');
-        if (cartItems.length === 0) return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
+        const cart = await Cart.findOne({ userId: decoded.id }).populate('items.productId');
+        if (!cart) return NextResponse.json({ error: 'Cart not found for this user.' }, { status: 400 });
+        if (cart.items.length === 0) return NextResponse.json({ error: 'Your cart is empty in the database.' }, { status: 400 });
 
         let totalAmountINR = 0;
-        const orderItems = cartItems.map(item => {
-            const product = item.product as any;
+        const orderItems = cart.items.map((item: any) => {
+            const product = item.productId;
+            if (!product) return null;
+            
             totalAmountINR += (product.basePriceINR * item.quantity);
 
             return {
                 product: product._id,
                 quantity: item.quantity,
                 price: product.basePriceINR,
-                name: product.name.en || product.name
+                name: product.name?.en || product.name
             };
-        });
+        }).filter((i: any) => i !== null);
+
+        if (orderItems.length === 0) return NextResponse.json({ error: 'No valid items in cart.' }, { status: 400 });
 
         // Create Order
         const newOrder = await Order.create({
             user: decoded.id,
             items: orderItems,
-            shippingAddress,
+            shippingAddress: {
+                fullName: shippingAddress.fullName,
+                street: shippingAddress.street,
+                city: shippingAddress.city,
+                state: shippingAddress.state,
+                zipCode: shippingAddress.zipCode,
+                country: shippingAddress.country,
+                phone: shippingAddress.phone
+            },
             totalAmountINR,
             currencyAtPurchase: currency,
             paymentStatus: 'Pending', // Assuming Cash On Delivery for now
@@ -54,9 +67,28 @@ export async function POST(req: Request) {
         });
 
         // Empty the DB Cart
-        await Cart.deleteMany({ user: decoded.id });
+        cart.items = [];
+        await cart.save();
 
         return NextResponse.json({ message: 'Order placed successfully.', order: newOrder }, { status: 201 });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
+    }
+}
+
+export async function GET(req: Request) {
+    try {
+        const token = (await cookies()).get('token')?.value;
+        if (!token) return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
+
+        const decoded = verifyToken(token) as { id: string } | null;
+        if (!decoded) return NextResponse.json({ error: 'Not authenticated.' }, { status: 401 });
+
+        await dbConnect();
+
+        // Get orders for the user, sort by newest first
+        const orders = await Order.find({ user: decoded.id }).sort({ createdAt: -1 });
+        return NextResponse.json({ orders }, { status: 200 });
     } catch (error: any) {
         return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
     }
