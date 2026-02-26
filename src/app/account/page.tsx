@@ -6,12 +6,14 @@ import { useRouter } from 'next/navigation';
 import { RootState } from '@/store/store';
 import { logoutUser } from '@/store/authSlice';
 import { MapPin, LogOut, Download, Package } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function AccountPage() {
     const user = useSelector((state: RootState) => state.auth.user);
     const router = useRouter();
     const dispatch = useDispatch();
     const [orders, setOrders] = useState([]);
+    const { t } = useTranslation();
 
     // Typecast user due to Redux strictness
     const profile = user as any;
@@ -41,9 +43,11 @@ export default function AccountPage() {
             await fetch('/api/auth/logout', { method: 'POST' });
 
             // Clear local storage / redux
+            localStorage.removeItem('cartItems');
+            localStorage.removeItem('wishlistItems');
             dispatch(logoutUser());
-            dispatch({ type: 'cart/setItems', payload: [] });
-            dispatch({ type: 'wishlist/setItems', payload: [] });
+            dispatch({ type: 'cart/setCartItems', payload: [] });
+            dispatch({ type: 'wishlist/setWishlistItems', payload: [] });
 
             router.push('/login');
         } catch (error) {
@@ -57,31 +61,30 @@ export default function AccountPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen bg-gray-50">
             <div className="flex justify-between items-end mb-10 border-b border-gray-200 pb-6">
                 <div>
-                    <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">My Account</h1>
-                    <p className="text-gray-500">Welcome back, {profile.name}!</p>
+                    <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">{t('account.title')}</h1>
+                    <p className="text-gray-500">{t('account.welcome')}, {profile.name}!</p>
                 </div>
                 <button
                     onClick={handleLogout}
                     className="flex items-center text-rose-600 hover:text-rose-800 font-medium transition-colors bg-rose-50 px-4 py-2 rounded-xl"
                 >
                     <LogOut className="w-5 h-5 mr-2" />
-                    Logout
+                    {t('account.logout')}
                 </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: Profile & Addresses */}
                 <div className="lg:col-span-1 space-y-8">
                     {/* Details Box */}
                     <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                        <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Details</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">{t('account.profileDetails')}</h2>
                         <div className="space-y-4">
                             <div>
-                                <p className="text-sm text-gray-500">Full Name</p>
+                                <p className="text-sm text-gray-500">{t('account.fullName')}</p>
                                 <p className="font-medium text-gray-900">{profile.name}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Email Address</p>
+                                <p className="text-sm text-gray-500">{t('account.email')}</p>
                                 <p className="font-medium text-gray-900">{profile.email}</p>
                             </div>
                         </div>
@@ -91,7 +94,7 @@ export default function AccountPage() {
                     <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
                         <div className="flex items-center space-x-2 mb-6">
                             <MapPin className="text-amber-600 w-5 h-5" />
-                            <h2 className="text-xl font-bold text-gray-900">Saved Addresses</h2>
+                            <h2 className="text-xl font-bold text-gray-900">{t('account.savedAddresses')}</h2>
                         </div>
 
                         {profile.addresses && profile.addresses.length > 0 ? (
@@ -106,7 +109,7 @@ export default function AccountPage() {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-gray-500 text-sm italic">You haven't saved any addresses yet.</p>
+                            <p className="text-gray-500 text-sm italic">{t('account.noAddresses')}</p>
                         )}
                     </div>
                 </div>
@@ -116,7 +119,7 @@ export default function AccountPage() {
                     <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 min-h-full">
                         <div className="flex items-center space-x-2 mb-6 border-b border-gray-100 pb-6">
                             <Package className="text-amber-600 w-6 h-6" />
-                            <h2 className="text-2xl font-bold text-gray-900">Order History</h2>
+                            <h2 className="text-2xl font-bold text-gray-900">{t('account.orderHistory')}</h2>
                         </div>
 
                         {orders.length > 0 ? (
@@ -125,7 +128,7 @@ export default function AccountPage() {
                                     <div key={order._id} className="p-6 rounded-2xl border border-gray-100 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="space-y-2">
                                             <div className="flex items-center space-x-3">
-                                                <span className="font-bold text-gray-900">Order #{order._id.substring(order._id.length - 6).toUpperCase()}</span>
+                                                <span className="font-bold text-gray-900">{t('account.order')} #{order._id.substring(order._id.length - 6).toUpperCase()}</span>
                                                 <span className={`px-3 py-1 text-xs font-bold rounded-full ${
                                                     order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' : 
                                                     order.orderStatus === 'Cancelled' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'
@@ -133,9 +136,9 @@ export default function AccountPage() {
                                                     {order.orderStatus}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-gray-500">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
+                                            <p className="text-sm text-gray-500">{t('account.orderDate')} {new Date(order.createdAt).toLocaleDateString()}</p>
                                             <div className="text-sm text-gray-700 mt-2">
-                                                <span className="font-medium text-gray-900">Items: </span>
+                                                <span className="font-medium text-gray-900">{t('account.items')} </span>
                                                 {order.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ')}
                                             </div>
                                         </div>
@@ -145,7 +148,7 @@ export default function AccountPage() {
                                                 ₹{order.totalAmountINR.toLocaleString('en-IN')}
                                             </p>
                                             <button className="text-sm font-medium text-amber-600 hover:text-amber-800 transition-colors flex items-center">
-                                                <Download className="w-4 h-4 mr-1" /> Invoice
+                                                <Download className="w-4 h-4 mr-1" /> {t('account.invoice')}
                                             </button>
                                         </div>
                                     </div>
@@ -154,7 +157,7 @@ export default function AccountPage() {
                         ) : (
                             <div className="text-center py-20">
                                 <Package className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                                <p className="text-gray-500 font-medium">No previous orders found.</p>
+                                <p className="text-gray-500 font-medium">{t('account.noOrders')}</p>
                             </div>
                         )}
                     </div>

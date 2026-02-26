@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { ShoppingCart, Heart, User, Menu, X, ChevronDown } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const collectionsList = ['Bridal', 'Heritage', 'Modern', 'Temple', 'Mens', 'Everyday', 'Royal', 'Minimalist', 'Festive', 'Antique'];
 const categoriesList = ['Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Bangles', 'Pendants', 'Mangalsutras', 'Nose Pins', 'Anklets', 'Chains'];
@@ -13,6 +14,7 @@ export default function Navbar() {
     const dispatch = useDispatch();
     const cartItems = useSelector((state: any) => state.cart.items);
     const wishlistItems = useSelector((state: any) => state.wishlist.items);
+    const { t } = useTranslation();
 
     // Fix hydration mismatch for counts
     const [isMounted, setIsMounted] = useState(false);
@@ -64,10 +66,10 @@ export default function Navbar() {
 
                     {/* Desktop Center Links with Dropdowns */}
                     <div className="hidden md:flex space-x-8 absolute left-1/2 transform -translate-x-1/2 h-full">
-                        <Link href="/" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">Home</Link>
-                        <Link href="/products" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">Shop All</Link>
-                        <Link href="/about" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">About Us</Link>
-                        <Link href="/contact" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">Contact</Link>
+                        <Link href="/" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">{t('navbar.home')}</Link>
+                        <Link href="/products" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">{t('navbar.shopAll')}</Link>
+                        <Link href="/about" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">{t('navbar.aboutUs')}</Link>
+                        <Link href="/contact" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">{t('navbar.contact')}</Link>
 
                         {/* Collections Dropdown */}
                         <div
@@ -76,7 +78,7 @@ export default function Navbar() {
                             onMouseLeave={() => setActiveDropdown(null)}
                         >
                             <Link href="/collections" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">
-                                Collections <ChevronDown className="w-4 h-4 ml-1" />
+                                {t('navbar.collections')} <ChevronDown className="w-4 h-4 ml-1" />
                             </Link>
                             {activeDropdown === 'collections' && (
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-48 bg-white shadow-xl border border-gray-100 rounded-xl py-2 z-50">
@@ -86,7 +88,7 @@ export default function Navbar() {
                                         </Link>
                                     ))}
                                     <div className="border-t border-gray-100 my-1 pt-1">
-                                        <Link href="/collections" className="block px-4 py-2 text-sm font-bold text-amber-600 hover:bg-amber-50">View All Collections</Link>
+                                        <Link href="/collections" className="block px-4 py-2 text-sm font-bold text-amber-600 hover:bg-amber-50">{t('navbar.viewAllCollections')}</Link>
                                     </div>
                                 </div>
                             )}
@@ -99,7 +101,7 @@ export default function Navbar() {
                             onMouseLeave={() => setActiveDropdown(null)}
                         >
                             <Link href="/categories" className="flex items-center text-gray-700 hover:text-amber-600 font-medium transition-colors h-full">
-                                Categories <ChevronDown className="w-4 h-4 ml-1" />
+                                {t('navbar.categories')} <ChevronDown className="w-4 h-4 ml-1" />
                             </Link>
                             {activeDropdown === 'categories' && (
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-48 bg-white shadow-xl border border-gray-100 rounded-xl py-2 z-50">
@@ -109,7 +111,7 @@ export default function Navbar() {
                                         </Link>
                                     ))}
                                     <div className="border-t border-gray-100 my-1 pt-1">
-                                        <Link href="/categories" className="block px-4 py-2 text-sm font-bold text-amber-600 hover:bg-amber-50">View All Categories</Link>
+                                        <Link href="/categories" className="block px-4 py-2 text-sm font-bold text-amber-600 hover:bg-amber-50">{t('navbar.viewAllCategories')}</Link>
                                     </div>
                                 </div>
                             )}
@@ -157,13 +159,13 @@ export default function Navbar() {
             {isMobileMenuOpen && (
                 <div className="md:hidden bg-white border-t border-gray-100 shadow-lg top-16 left-0 w-full absolute py-4 px-6 space-y-2 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto pb-12">
                     {/* Primary Links */}
-                    <Link href="/" onClick={toggleMobileMenu} className="block text-gray-700 py-3 border-b border-gray-100 font-medium">Home</Link>
-                    <Link href="/products" onClick={toggleMobileMenu} className="block text-gray-700 py-3 border-b border-gray-100 font-medium">Shop All</Link>
-                    <Link href="/about" onClick={toggleMobileMenu} className="block text-gray-700 py-3 border-b border-gray-100 font-medium">About Us</Link>
-                    <Link href="/contact" onClick={toggleMobileMenu} className="block text-gray-700 py-3 border-b border-gray-100 font-medium">Contact</Link>
+                    <Link href="/" onClick={toggleMobileMenu} className="block text-gray-700 py-3 border-b border-gray-100 font-medium">{t('navbar.home')}</Link>
+                    <Link href="/products" onClick={toggleMobileMenu} className="block text-gray-700 py-3 border-b border-gray-100 font-medium">{t('navbar.shopAll')}</Link>
+                    <Link href="/about" onClick={toggleMobileMenu} className="block text-gray-700 py-3 border-b border-gray-100 font-medium">{t('navbar.aboutUs')}</Link>
+                    <Link href="/contact" onClick={toggleMobileMenu} className="block text-gray-700 py-3 border-b border-gray-100 font-medium">{t('navbar.contact')}</Link>
 
                     <div className="py-3 border-b border-gray-100">
-                        <div className="font-medium text-amber-600 mb-2">Collections</div>
+                        <div className="font-medium text-amber-600 mb-2">{t('navbar.collections')}</div>
                         <div className="grid grid-cols-2 gap-2 pl-4">
                             {collectionsList.map(col => (
                                 <Link key={col} href={`/collections/${col.toLowerCase()}`} onClick={toggleMobileMenu} className="text-sm text-gray-600 py-1 hover:text-amber-600">{col}</Link>
@@ -172,7 +174,7 @@ export default function Navbar() {
                     </div>
 
                     <div className="py-3 border-b border-gray-100">
-                        <div className="font-medium text-amber-600 mb-2">Categories</div>
+                        <div className="font-medium text-amber-600 mb-2">{t('navbar.categories')}</div>
                         <div className="grid grid-cols-2 gap-2 pl-4">
                             {categoriesList.map(cat => (
                                 <Link key={cat} href={`/categories/${cat.toLowerCase().replace(' ', '-')}`} onClick={toggleMobileMenu} className="text-sm text-gray-600 py-1 hover:text-amber-600">{cat}</Link>
@@ -182,30 +184,30 @@ export default function Navbar() {
 
                     {/* Settings / Actions */}
                     <div className="flex justify-between items-center border-b border-gray-100 pb-4 pt-4">
-                        <span className="text-sm font-medium text-gray-700">Language</span>
+                        <span className="text-sm font-medium text-gray-700">{t('navbar.language')}</span>
                         <LanguageSelector />
                     </div>
                     <div className="flex justify-between items-center border-b border-gray-100 pb-4 pt-4">
-                        <span className="text-sm font-medium text-gray-700">Currency</span>
+                        <span className="text-sm font-medium text-gray-700">{t('navbar.currency')}</span>
                         <CurrencySelector />
                     </div>
 
                     <Link href="/wishlist" onClick={toggleMobileMenu} className="flex items-center justify-between text-gray-700 py-3 border-b border-gray-100">
-                        <span className="font-medium">Wishlist</span>
+                        <span className="font-medium">{t('navbar.wishlist')}</span>
                         <div className="flex items-center space-x-2">
                             {isMounted && wishlistCount > 0 && <span className="text-rose-500 font-bold text-sm bg-rose-50 px-2 rounded-full">{wishlistCount}</span>}
                             <Heart className="w-5 h-5 text-gray-500" />
                         </div>
                     </Link>
                     <Link href="/cart" onClick={toggleMobileMenu} className="flex items-center justify-between text-gray-700 py-3 border-b border-gray-100">
-                        <span className="font-medium">Cart</span>
+                        <span className="font-medium">{t('navbar.cart')}</span>
                         <div className="flex items-center space-x-2">
                             {isMounted && cartCount > 0 && <span className="text-red-500 font-bold text-sm bg-red-50 px-2 rounded-full">{cartCount}</span>}
                             <ShoppingCart className="w-5 h-5 text-gray-500" />
                         </div>
                     </Link>
                     <Link href="/login" onClick={toggleMobileMenu} className="flex items-center justify-between text-gray-700 py-3 pt-4 mb-4">
-                        <span className="font-medium">My Account</span>
+                        <span className="font-medium">{t('navbar.myAccount')}</span>
                         <User className="w-5 h-5 text-gray-500" />
                     </Link>
                 </div>

@@ -1,4 +1,72 @@
 {
+    "navbar": {
+        "home": "Home",
+        "shopAll": "Shop All",
+        "aboutUs": "About Us",
+        "contact": "Contact",
+        "collections": "Collections",
+        "categories": "Categories",
+        "viewAllCollections": "View All Collections",
+        "viewAllCategories": "View All Categories",
+        "language": "Language",
+        "currency": "Currency",
+        "wishlist": "Wishlist",
+        "cart": "Cart",
+        "myAccount": "My Account"
+    },
+    "footer": {
+        "description": "Crafting elegance and celebrating life's precious moments with exquisite, fine jewellery tailored for your unique style.",
+        "quickLinks": {
+            "title": "Quick Links",
+            "home": "Home",
+            "shopAll": "Shop All",
+            "shoppingCart": "Shopping Cart",
+            "yourWishlist": "Your Wishlist"
+        },
+        "customerCare": {
+            "title": "Customer Care",
+            "myAccount": "My Account",
+            "aboutUs": "About Us",
+            "contactUs": "Contact Us",
+            "shippingReturns": "Shipping & Returns"
+        },
+        "secureShopping": {
+            "title": "Secure Shopping",
+            "description": "We use industry standard encryption and guarantee 100% secure checkouts."
+        },
+        "copyright": "Radhey Jewellers. All rights reserved.",
+        "privacyPolicy": "Privacy Policy",
+        "termsOfService": "Terms of Service"
+    },
+    "home": {
+        "hero": {
+            "title": "Elegance Crafted for You",
+            "subtitle": "Discover our exclusive luxury collection of fine jewellery celebrating your unique style.",
+            "button": "Shop the Master Collection"
+        },
+        "shopByCategory": {
+            "title": "Shop By Category",
+            "viewAll": "View All Categories"
+        },
+        "featured": {
+            "title": "Featured Additions",
+            "subtitle": "Handpicked luxurious designs selected from our massive inventory just for you.",
+            "viewAll": "View All Products",
+            "empty": "No featured products currently available."
+        },
+        "curated": {
+            "title": "Curated Collections",
+            "shopBtn": "Shop The Collection",
+            "viewAll": "Explore All 10 Master Collections"
+        },
+        "newsletter": {
+            "badge": "Join The Inner Circle",
+            "title": "Unlock Exclusive Luxury",
+            "description": "Create an account today to wish-list your favorite items, checkout faster, and receive early access to our newest master collections.",
+            "createBtn": "Create Free Account",
+            "loginBtn": "Log In"
+        }
+    },
     "about": {
         "title": "About Us",
         "metaDescription": "Learn more about Radhey Jewellers, our heritage, and our commitment to crafting the finest luxury jewellery.",
@@ -23,5 +91,70 @@
         "heading": "Terms of Service",
         "content1": "Welcome to Radhey Jewellers. By accessing this website, we assume you accept these terms and conditions. Do not continue to use the website if you do not agree to take all of the terms and conditions stated on this page.",
         "content2": "All prices and availability are subject to change without notice. We reserve the right to limit quantities."
+    },
+    "cart": {
+        "title": "Your Shopping Cart",
+        "emptyTitle": "Your Cart is Empty",
+        "emptyDesc": "Looks like you haven't added anything to your cart yet. Discover our latest collections.",
+        "startShopping": "Start Shopping",
+        "qty": "Qty",
+        "orderSummary": "Order Summary",
+        "subtotal": "Subtotal",
+        "shipping": "Shipping",
+        "free": "Free",
+        "total": "Total",
+        "proceed": "Proceed to Checkout",
+        "encryption": "Secured with Industry Standard Encryption"
+    },
+    "wishlist": {
+        "title": "Your Wishlist",
+        "emptyTitle": "Your Wishlist is Empty",
+        "emptyDesc": "Add items that you love to your wishlist. Review them anytime and easily move them to the cart.",
+        "startShopping": "Start Shopping",
+        "moveToCart": "Move to Cart",
+        "removeFromWishlist": "Remove from Wishlist"
+    },
+    "checkout": {
+        "title": "Secure Checkout",
+        "loading": "Loading checkout...",
+        "shippingAddress": "Shipping Address",
+        "noAddresses": "No addresses saved yet.",
+        "addNewAddress": "Add New Address",
+        "newAddressDetails": "New Address Details",
+        "cancel": "Cancel",
+        "saveAddress": "Save Address",
+        "paymentMethod": "Payment Method",
+        "cod": "Cash on Delivery (COD)",
+        "codDesc": "Pay when your jewellery arrives.",
+        "orderSummary": "Order Summary",
+        "qty": "Qty",
+        "subtotal": "Subtotal",
+        "shipping": "Insured Shipping",
+        "free": "Free",
+        "total": "Total",
+        "placeOrder": "Place Order"
+    },
+    "account": {
+        "title": "My Account",
+        "welcome": "Welcome back",
+        "logout": "Logout",
+        "profileDetails": "Profile Details",
+        "fullName": "Full Name",
+        "email": "Email Address",
+        "savedAddresses": "Saved Addresses",
+        "noAddresses": "You haven't saved any addresses yet.",
+        "orderHistory": "Order History",
+        "order": "Order",
+        "orderDate": "Placed on",
+        "items": "Items",
+        "invoice": "Invoice",
+        "noOrders": "No previous orders found."
+    },
+    "privacy": {
+        "title": "Privacy Policy",
+        "metaDescription": "Review Radhey Jewellers' Privacy Policy. We are committed to protecting your personal information and ensuring a secure shopping experience.",
+        "heading": "Your Privacy Matters",
+        "content1": "At Radhey Jewellers, we take your privacy seriously. This privacy policy describes how your personal information is collected, used, and shared when you visit or make a purchase from our website.",
+        "content2": "We use the order Information that we collect generally to fulfill any orders placed through the site (including processing your payment information, arranging for shipping, and providing you with invoices and/or order confirmations)."
     }
 }

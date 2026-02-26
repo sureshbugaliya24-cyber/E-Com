@@ -137,14 +137,15 @@ export default function ProductsPage() {
                 <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         {products.map((product, index) => {
+                            const uniqueKey = `${product._id}-${index}`;
                             if (products.length === index + 1) {
                                 return (
-                                    <div ref={lastProductElementRef} key={String(product._id)}>
+                                    <div ref={lastProductElementRef} key={uniqueKey}>
                                         <ProductCard product={product} />
                                     </div>
                                 );
                             } else {
-                                return <ProductCard key={String(product._id)} product={product} />;
+                                return <ProductCard key={uniqueKey} product={product} />;
                             }
                         })}
                     </div>

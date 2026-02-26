@@ -37,11 +37,16 @@ export async function POST(req: Request) {
             
             totalAmountINR += (product.basePriceINR * item.quantity);
 
+            // Extract string from bilingual name object
+            const productName = typeof product.name === 'object' && product.name !== null
+                ? product.name.en || 'Jewellery Item'
+                : product.name || 'Jewellery Item';
+
             return {
                 product: product._id,
                 quantity: item.quantity,
                 price: product.basePriceINR,
-                name: product.name?.en || product.name
+                name: String(productName)
             };
         }).filter((i: any) => i !== null);
 
@@ -72,6 +77,8 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ message: 'Order placed successfully.', order: newOrder }, { status: 201 });
     } catch (error: any) {
+        console.error("ORDER CREATION FAILED STRICT LOG:");
+        console.error(error);
         return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
     }
 }

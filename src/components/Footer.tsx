@@ -1,6 +1,10 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function Footer() {
+    const { t } = useTranslation();
     return (
         <footer className="bg-gray-900 pt-16 pb-8 text-gray-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -10,34 +14,34 @@ export default function Footer() {
                             Radhey Jewellers
                         </Link>
                         <p className="text-sm text-gray-400 mb-6 leading-relaxed">
-                            Crafting elegance and celebrating life's precious moments with exquisite, fine jewellery tailored for your unique style.
+                            {t('footer.description')}
                         </p>
                     </div>
 
                     <div>
-                        <h4 className="text-white font-bold mb-6 font-serif tracking-widest uppercase text-sm">Quick Links</h4>
+                        <h4 className="text-white font-bold mb-6 font-serif tracking-widest uppercase text-sm">{t('footer.quickLinks.title')}</h4>
                         <ul className="space-y-4 text-sm">
-                            <li><Link href="/" className="hover:text-amber-500 transition-colors">Home</Link></li>
-                            <li><Link href="/products" className="hover:text-amber-500 transition-colors">Shop All</Link></li>
-                            <li><Link href="/cart" className="hover:text-amber-500 transition-colors">Shopping Cart</Link></li>
-                            <li><Link href="/wishlist" className="hover:text-amber-500 transition-colors">Your Wishlist</Link></li>
+                            <li><Link href="/" className="hover:text-amber-500 transition-colors">{t('footer.quickLinks.home')}</Link></li>
+                            <li><Link href="/products" className="hover:text-amber-500 transition-colors">{t('footer.quickLinks.shopAll')}</Link></li>
+                            <li><Link href="/cart" className="hover:text-amber-500 transition-colors">{t('footer.quickLinks.shoppingCart')}</Link></li>
+                            <li><Link href="/wishlist" className="hover:text-amber-500 transition-colors">{t('footer.quickLinks.yourWishlist')}</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h4 className="text-white font-bold mb-6 font-serif tracking-widest uppercase text-sm">Customer Care</h4>
+                        <h4 className="text-white font-bold mb-6 font-serif tracking-widest uppercase text-sm">{t('footer.customerCare.title')}</h4>
                         <ul className="space-y-4 text-sm">
-                            <li><Link href="/login" className="hover:text-amber-500 transition-colors">My Account</Link></li>
-                            <li><Link href="/about" className="hover:text-amber-500 transition-colors">About Us</Link></li>
-                            <li><Link href="/contact" className="hover:text-amber-500 transition-colors">Contact Us</Link></li>
-                            <li><Link href="#" className="hover:text-amber-500 transition-colors">Shipping & Returns</Link></li>
+                            <li><Link href="/login" className="hover:text-amber-500 transition-colors">{t('footer.customerCare.myAccount')}</Link></li>
+                            <li><Link href="/about" className="hover:text-amber-500 transition-colors">{t('footer.customerCare.aboutUs')}</Link></li>
+                            <li><Link href="/contact" className="hover:text-amber-500 transition-colors">{t('footer.customerCare.contactUs')}</Link></li>
+                            <li><Link href="#" className="hover:text-amber-500 transition-colors">{t('footer.customerCare.shippingReturns')}</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h4 className="text-white font-bold mb-6 font-serif tracking-widest uppercase text-sm">Secure Shopping</h4>
+                        <h4 className="text-white font-bold mb-6 font-serif tracking-widest uppercase text-sm">{t('footer.secureShopping.title')}</h4>
                         <p className="text-sm text-gray-400 mb-4 leading-relaxed">
-                            We use industry standard encryption and guarantee 100% secure checkouts.
+                            {t('footer.secureShopping.description')}
                         </p>
                         <div className="flex space-x-4">
                             {/* Visual placeholders for trusted payments */}
@@ -49,9 +53,10 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-                    <p>&copy; {new Date().getFullYear()} Radhey Jewellers. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} {t('footer.copyright')}</p>
                     <div className="flex space-x-6 mt-4 md:mt-0">
-                        <Link href="/terms" className="hover:text-amber-500 transition-colors">Terms of Service</Link>
+                        <Link href="/privacy" className="hover:text-amber-500 transition-colors">{t('footer.privacyPolicy')}</Link>
+                        <Link href="/terms" className="hover:text-amber-500 transition-colors">{t('footer.termsOfService')}</Link>
                     </div>
                 </div>
             </div>

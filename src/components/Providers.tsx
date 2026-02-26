@@ -5,6 +5,8 @@ import { store } from '@/store/store';
 import { useEffect, useState } from 'react';
 import { setCartItems } from '@/store/cartSlice';
 import { setLanguage, setCurrency } from '@/store/uiSlice';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 function StateSync({ children }: { children: React.ReactNode }) {
     const [isMounted, setIsMounted] = useState(false);
@@ -86,7 +88,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <Provider store={store}>
             <StateSync>
+                <Navbar />
                 {children}
+                <Footer />
             </StateSync>
         </Provider>
     );

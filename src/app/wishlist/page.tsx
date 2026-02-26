@@ -9,12 +9,14 @@ import { formatCurrency, convertCurrency } from '@/utils/currency';
 import { toggleWishlist } from '@/store/wishlistSlice';
 import { Heart, ShoppingBag, Trash2 } from 'lucide-react';
 import { addToCart } from '@/store/cartSlice';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function WishlistPage() {
     const dispatch = useDispatch();
     const wishlistItems = useSelector((state: any) => state.wishlist.items);
     const language = useSelector((state: any) => state.ui.language);
     const currency = useSelector((state: any) => state.ui.currency);
+    const { t } = useTranslation();
 
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -87,10 +89,10 @@ export default function WishlistPage() {
         return (
             <div className="min-h-screen pt-32 text-center px-4">
                 <Heart className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-                <h1 className="text-3xl font-serif text-gray-900 mb-6">Your Wishlist is Empty</h1>
-                <p className="text-gray-500 mb-8 max-w-md mx-auto">Save your favorite pieces of jewellery here to easily find them later.</p>
+                <h1 className="text-3xl font-serif text-gray-900 mb-6">{t('wishlist.emptyTitle')}</h1>
+                <p className="text-gray-500 mb-8 max-w-md mx-auto">{t('wishlist.emptyDesc')}</p>
                 <Link href="/" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-full text-lg font-medium transition-colors">
-                    Explore Collections
+                    {t('wishlist.startShopping')}
                 </Link>
             </div>
         );
@@ -98,7 +100,7 @@ export default function WishlistPage() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-screen">
-            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-10 border-b-2 border-amber-600 inline-block pb-2">Your Wishlist</h1>
+            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-10 border-b-2 border-amber-600 inline-block pb-2">{t('wishlist.title')}</h1>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {wishlistItems.map((productId: string) => {
@@ -148,7 +150,7 @@ export default function WishlistPage() {
                                         className={`w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-colors text-sm font-medium shadow-md ${addedStates[productId] ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-900 hover:bg-amber-600 text-white'}`}
                                     >
                                         <ShoppingBag className="w-4 h-4" />
-                                        <span>{addedStates[productId] ? 'Added!' : 'Move to Cart'}</span>
+                                        <span>{addedStates[productId] ? 'Added!' : t('wishlist.moveToCart')}</span>
                                     </button>
                                 </div>
                             </div>

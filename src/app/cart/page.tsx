@@ -8,12 +8,14 @@ import { getLocalizedString } from '@/utils/language';
 import { formatCurrency, convertCurrency } from '@/utils/currency';
 import { setCartItems, updateCartItemQuantity } from '@/store/cartSlice';
 import { Trash2, Plus, Minus } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function CartPage() {
     const dispatch = useDispatch();
     const cartItems = useSelector((state: any) => state.cart.items);
     const language = useSelector((state: any) => state.ui.language);
     const currency = useSelector((state: any) => state.ui.currency);
+    const { t } = useTranslation();
 
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -85,10 +87,10 @@ export default function CartPage() {
     if (cartItems.length === 0 || (!loading && validItems.length === 0)) {
         return (
             <div className="min-h-screen pt-32 text-center px-4">
-                <h1 className="text-3xl font-serif text-gray-900 mb-6">Your Cart is Empty</h1>
-                <p className="text-gray-500 mb-8 max-w-md mx-auto">Looks like you haven't added anything to your cart yet. Discover our latest collections.</p>
+                <h1 className="text-3xl font-serif text-gray-900 mb-6">{t('cart.emptyTitle')}</h1>
+                <p className="text-gray-500 mb-8 max-w-md mx-auto">{t('cart.emptyDesc')}</p>
                 <Link href="/" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-full text-lg font-medium transition-colors">
-                    Start Shopping
+                    {t('cart.startShopping')}
                 </Link>
             </div>
         );
@@ -98,7 +100,7 @@ export default function CartPage() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 min-h-screen">
-            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-10 border-b-2 border-amber-600 inline-block pb-2">Your Shopping Cart</h1>
+            <h1 className="text-4xl font-serif font-bold text-gray-900 mb-10 border-b-2 border-amber-600 inline-block pb-2">{t('cart.title')}</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-6">
@@ -157,28 +159,28 @@ export default function CartPage() {
                 </div>
 
                 <div className="bg-gray-50 p-8 rounded-3xl border border-gray-200 h-fit sticky top-24">
-                    <h2 className="text-2xl font-serif font-bold text-gray-900 mb-6">Order Summary</h2>
+                    <h2 className="text-2xl font-serif font-bold text-gray-900 mb-6">{t('cart.orderSummary')}</h2>
 
                     <div className="flex justify-between items-center mb-4 text-gray-600">
-                        <span>Subtotal</span>
+                        <span>{t('cart.subtotal')}</span>
                         <span className="font-medium text-gray-900">{formatCurrency(cartTotal, currency)}</span>
                     </div>
                     <div className="flex justify-between items-center mb-6 text-gray-600">
-                        <span>Shipping</span>
-                        <span className="text-green-600 font-medium">Free</span>
+                        <span>{t('cart.shipping')}</span>
+                        <span className="text-green-600 font-medium">{t('cart.free')}</span>
                     </div>
 
                     <div className="border-t border-gray-200 pt-6 mb-8 flex justify-between items-center">
-                        <span className="text-lg font-bold text-gray-900">Total</span>
+                        <span className="text-lg font-bold text-gray-900">{t('cart.total')}</span>
                         <span className="text-2xl font-bold text-amber-600">{formatCurrency(cartTotal, currency)}</span>
                     </div>
 
                     <Link href="/checkout" className="w-full bg-gray-900 hover:bg-amber-600 text-white font-medium py-4 px-6 rounded-xl transition-all shadow-md shadow-gray-900/10 hover:shadow-amber-600/30 text-lg flex justify-center text-center">
-                        Proceed to Checkout
+                        {t('cart.proceed')}
                     </Link>
 
                     <div className="mt-6 text-sm text-center text-gray-500 flex items-center justify-center space-x-2">
-                        <span>Secured with Industry Standard Encryption</span>
+                        <span>{t('cart.encryption')}</span>
                     </div>
                 </div>
             </div>
