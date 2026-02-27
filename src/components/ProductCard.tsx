@@ -11,6 +11,7 @@ import { toggleWishlist } from '@/store/wishlistSlice';
 import { addToCart } from '@/store/cartSlice';
 import { IProduct } from '@/models/Product';
 import { Heart, ShoppingBag } from 'lucide-react';
+import { getApiUrl } from '@/utils/apiClient';
 
 interface ProductCardProps {
     product: IProduct;
@@ -34,7 +35,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             setTimeout(() => setIsAdded(false), 2500);
 
             // Sync with DB
-            await fetch('/api/cart', {
+            await fetch(getApiUrl('/api/cart'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

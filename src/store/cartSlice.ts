@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface CartItem {
     productId: string;
+    variationName?: string;
     quantity: number;
 }
 
@@ -23,15 +24,15 @@ const cartSlice = createSlice({
             state.items = action.payload;
         },
         addToCart: (state, action: PayloadAction<CartItem>) => {
-            const existingIndex = state.items.findIndex(item => item.productId === action.payload.productId);
+            const existingIndex = state.items.findIndex(item => item.productId === action.payload.productId && item.variationName === action.payload.variationName);
             if (existingIndex >= 0) {
                 state.items[existingIndex].quantity += action.payload.quantity;
             } else {
                 state.items.push(action.payload);
             }
         },
-        updateCartItemQuantity: (state, action: PayloadAction<{ productId: string, quantity: number }>) => {
-            const existingIndex = state.items.findIndex(item => item.productId === action.payload.productId);
+        updateCartItemQuantity: (state, action: PayloadAction<{ productId: string, variationName?: string, quantity: number }>) => {
+            const existingIndex = state.items.findIndex(item => item.productId === action.payload.productId && item.variationName === action.payload.variationName);
             if (existingIndex >= 0) {
                 state.items[existingIndex].quantity = action.payload.quantity;
             }

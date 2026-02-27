@@ -25,6 +25,7 @@ export async function GET() {
         const formattedItems = cart.items.map((item: any) => ({
             productId: item.productId._id,
             product: item.productId,
+            variationName: item.variationName,
             quantity: item.quantity
         }));
 
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
         const decoded = verifyToken(token) as { id: string } | null;
         if (!decoded) return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
 
-        const { productId, quantity } = await req.json();
+        const { productId, quantity, variationName } = await req.json();
         if (!productId || quantity == null || quantity < 1) {
             return NextResponse.json({ error: 'Valid product layout and quantity required.' }, { status: 400 });
         }
@@ -51,17 +52,17 @@ export async function POST(req: Request) {
         let cart = await Cart.findOne({ userId: decoded.id });
 
         if (cart) {
-            const itemIndex = cart.items.findIndex((p: any) => p.productId.toString() === productId);
+            const itemIndex = cart.items.findIndex((p: any) => p.productId.toString() === productId && p.variationName === variationName);
             if (itemIndex > -1) {
                 cart.items[itemIndex].quantity += quantity;
             } else {
-                cart.items.push({ productId, quantity });
+                cart.items.push({ productId, quantity, variationName });
             }
             cart = await cart.save();
         } else {
             cart = await Cart.create({
                 userId: decoded.id,
-                items: [{ productId, quantity }],
+                items: [{ productId, quantity, variationName }],
             });
         }
 
@@ -83,7 +84,7 @@ export async function PUT(req: Request) {
         const decoded = verifyToken(token) as { id: string } | null;
         if (!decoded) return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
 
-        const { productId, quantity } = await req.json();
+        const { productId, quantity, variationName } = await req.json();
         if (!productId || quantity == null || quantity < 0) {
             return NextResponse.json({ error: 'Valid product and quantity required.' }, { status: 400 });
         }
@@ -93,7 +94,7 @@ export async function PUT(req: Request) {
 
         if (!cart) return NextResponse.json({ error: 'Cart not found' }, { status: 404 });
 
-        const itemIndex = cart.items.findIndex((p: any) => p.productId.toString() === productId);
+        const itemIndex = cart.items.findIndex((p: any) => p.productId.toString() === productId && p.variationName === variationName);
 
         if (itemIndex > -1) {
             if (quantity === 0) {

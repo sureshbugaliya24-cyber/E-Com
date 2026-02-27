@@ -1,4 +1,5 @@
 import ProductCard from '@/components/ProductCard';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import dbConnect from '@/lib/mongoose';
 import Product, { IProduct } from '@/models/Product';
 import Link from 'next/link';
@@ -24,11 +25,12 @@ export default async function SingleCollectionPage({ params }: { params: Promise
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen">
-            <Link href="/collections" className="inline-flex items-center text-amber-600 hover:text-amber-800 font-medium mb-8 group">
-                <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Collections
-            </Link>
+            <Breadcrumbs items={[
+                { label: 'Collections', href: '/collections' },
+                { label: collectionName }
+            ]} />
 
-            <header className="mb-12 border-b border-gray-100 pb-8">
+            <header className="mb-12 border-b border-gray-100 pb-8 mt-6">
                 <h1 className="text-4xl md:text-5xl font-serif font-extrabold text-gray-900 mb-4">{collectionName} Collection</h1>
                 <p className="text-xl text-gray-500 max-w-2xl">Discover {products.length} exclusive pieces curated perfectly for the {collectionName} aesthetic.</p>
             </header>

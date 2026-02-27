@@ -9,6 +9,7 @@ import { formatCurrency, convertCurrency } from '@/utils/currency';
 import { setCartItems, updateCartItemQuantity } from '@/store/cartSlice';
 import { Trash2, Plus, Minus } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { getApiUrl } from '@/utils/apiClient';
 
 export default function CartPage() {
     const dispatch = useDispatch();
@@ -29,7 +30,7 @@ export default function CartPage() {
             }
             try {
                 const ids = cartItems.map((item: any) => item.productId).join(',');
-                const res = await fetch(`/api/products?ids=${ids}`);
+                const res = await fetch(getApiUrl(`/api/products?ids=${ids}`));
                 const data = await res.json();
                 if (data.products) {
                     setProducts(data.products);
@@ -44,33 +45,32 @@ export default function CartPage() {
         fetchProducts();
     }, [cartItems]);
 
-    const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
+    const handleUpdateQuantity = async (productId: string, newQuantity: number, variationName?: string) => {
         if (newQuantity < 1) return;
 
-        // Optimistic UI Update
-        dispatch(updateCartItemQuantity({ productId, quantity: newQuantity }));
+        dispatch(updateCartItemQuantity({ productId, variationName, quantity: newQuantity }));
 
         try {
-            await fetch('/api/cart', {
+            await fetch(getApiUrl('/api/cart'), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, quantity: newQuantity })
+                body: JSON.stringify({ productId, variationName, quantity: newQuantity })
             });
         } catch (error) {
             console.error('Failed to update quantity', error);
         }
     };
 
-    const handleRemove = async (productId: string) => {
+    const handleRemove = async (productId: string, variationName?: string) => {
         // Optimistic UI Removal
-        const newCart = cartItems.filter((item: any) => item.productId !== productId);
+        const newCart = cartItems.filter((item: any) => !(item.productId === productId && item.variationName === variationName));
         dispatch(setCartItems(newCart));
 
         try {
-            await fetch('/api/cart', {
+            await fetch(getApiUrl('/api/cart'), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, quantity: 0 })
+                body: JSON.stringify({ productId, variationName, quantity: 0 })
             });
         } catch (error) {
             console.error('Failed to remove item', error);
@@ -108,26 +108,40 @@ export default function CartPage() {
                         const product = products.find(p => String(p._id) === cartItem.productId);
                         if (!product) return null;
 
+                        let itemPriceINR = product.basePriceINR;
+                        let itemImage = product.images?.[0] || '';
+
+                        if (cartItem.variationName && product.variations) {
+                            const variant = product.variations.find((v: any) => v.sku === cartItem.variationName);
+                            if (variant) {
+                                if (variant.priceINR) itemPriceINR = variant.priceINR;
+                                if (variant.images?.[0]) itemImage = variant.images[0];
+                            }
+                        }
+
                         const name = getLocalizedString(product.name, language);
-                        const itemPrice = convertCurrency(product.basePriceINR, currency);
+                        const itemPrice = convertCurrency(itemPriceINR, currency);
                         const lineTotal = itemPrice * cartItem.quantity;
                         cartTotal += lineTotal;
 
                         return (
-                            <div key={cartItem.productId} className="flex flex-col sm:flex-row items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
+                            <div key={`${cartItem.productId}-${cartItem.variationName || 'base'}`} className="flex flex-col sm:flex-row items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100 relative">
                                 <div className="relative w-32 h-32 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
-                                    {product.images?.[0] ? (
-                                        <Image src={product.images[0]} alt={name} fill className="object-cover" />
+                                    {itemImage ? (
+                                        <Image src={itemImage} alt={name} fill className="object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Image</div>
                                     )}
                                 </div>
                                 <div className="sm:ml-8 mt-4 sm:mt-0 flex-grow text-center sm:text-left">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{name}</h3>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-1">{name}</h3>
+                                    {cartItem.variationName && (
+                                        <p className="text-sm text-gray-500 mb-2 uppercase tracking-wide">Variant ID: {cartItem.variationName}</p>
+                                    )}
 
-                                    <div className="flex items-center justify-center sm:justify-start space-x-4 mb-3 border border-gray-200 w-fit rounded-lg overflow-hidden">
+                                    <div className="flex items-center justify-center sm:justify-start space-x-4 mb-3 border border-gray-200 w-fit rounded-lg overflow-hidden mt-2">
                                         <button
-                                            onClick={() => handleUpdateQuantity(cartItem.productId, cartItem.quantity - 1)}
+                                            onClick={() => handleUpdateQuantity(cartItem.productId, Math.max(1, cartItem.quantity - 1), cartItem.variationName)}
                                             className="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
                                             disabled={cartItem.quantity <= 1}
                                         >
@@ -137,7 +151,7 @@ export default function CartPage() {
                                             {cartItem.quantity}
                                         </span>
                                         <button
-                                            onClick={() => handleUpdateQuantity(cartItem.productId, cartItem.quantity + 1)}
+                                            onClick={() => handleUpdateQuantity(cartItem.productId, cartItem.quantity + 1, cartItem.variationName)}
                                             className="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
                                         >
                                             <Plus className="w-4 h-4" />
@@ -147,7 +161,7 @@ export default function CartPage() {
                                     <p className="text-lg font-bold text-gray-900">{formatCurrency(lineTotal, currency)}</p>
                                 </div>
                                 <button
-                                    onClick={() => handleRemove(cartItem.productId)}
+                                    onClick={() => handleRemove(cartItem.productId, cartItem.variationName)}
                                     className="absolute top-4 right-4 sm:relative sm:top-0 sm:right-0 sm:ml-6 p-2 text-rose-500 hover:bg-rose-50 rounded-full transition-colors"
                                     title="Remove Item"
                                 >

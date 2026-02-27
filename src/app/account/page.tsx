@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { RootState } from '@/store/store';
-import { logoutUser } from '@/store/authSlice';
-import { MapPin, LogOut, Download, Package } from 'lucide-react';
+import { logoutUser, setUser } from '@/store/authSlice';
+import { MapPin, LogOut, Download, Package, Edit2, Trash2, Plus, X } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { getApiUrl } from '@/utils/apiClient';
 
 export default function AccountPage() {
     const user = useSelector((state: RootState) => state.auth.user);
@@ -14,6 +16,13 @@ export default function AccountPage() {
     const dispatch = useDispatch();
     const [orders, setOrders] = useState([]);
     const { t } = useTranslation();
+
+    // Address Edit States
+    const [isEditingAddress, setIsEditingAddress] = useState(false);
+    const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+    const [addrForm, setAddrForm] = useState({
+        fullName: '', street: '', city: '', state: '', zipCode: '', country: 'India', phone: ''
+    });
 
     // Typecast user due to Redux strictness
     const profile = user as any;
@@ -25,7 +34,7 @@ export default function AccountPage() {
             // Fetch past orders
             const fetchOrders = async () => {
                 try {
-                    const res = await fetch('/api/orders');
+                    const res = await fetch(getApiUrl('/api/orders'));
                     if (res.ok) {
                         const data = await res.json();
                         setOrders(data.orders || []);
@@ -40,7 +49,7 @@ export default function AccountPage() {
 
     const handleLogout = async () => {
         try {
-            await fetch('/api/auth/logout', { method: 'POST' });
+            await fetch(getApiUrl('/api/auth/logout'), { method: 'POST' });
 
             // Clear local storage / redux
             localStorage.removeItem('cartItems');
@@ -52,6 +61,63 @@ export default function AccountPage() {
             router.push('/login');
         } catch (error) {
             console.error('Logout failed', error);
+        }
+    };
+
+    const handleEditAddress = (addr: any) => {
+        setAddrForm(addr);
+        setEditingAddressId(addr._id);
+        setIsEditingAddress(true);
+    };
+
+    const handleAddAddressClick = () => {
+        setAddrForm({ fullName: '', street: '', city: '', state: '', zipCode: '', country: 'India', phone: '' });
+        setEditingAddressId(null);
+        setIsEditingAddress(true);
+    };
+
+    const handleCancelAddress = () => {
+        setIsEditingAddress(false);
+        setEditingAddressId(null);
+    };
+
+    const handleSaveAddress = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            let res;
+            if (editingAddressId) {
+                res = await fetch(getApiUrl('/api/user/address'), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ _id: editingAddressId, ...addrForm })
+                });
+            } else {
+                res = await fetch(getApiUrl('/api/user/address'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(addrForm)
+                });
+            }
+            if (res.ok) {
+                const data = await res.json();
+                dispatch(setUser(data.user));
+                setIsEditingAddress(false);
+            }
+        } catch (e) {
+            console.error('Error saving address', e);
+        }
+    };
+
+    const handleDeleteAddress = async (id: string) => {
+        if (!confirm('Delete this address?')) return;
+        try {
+            const res = await fetch(getApiUrl(`/api/user/address?id=${id}`), { method: 'DELETE' });
+            if (res.ok) {
+                const data = await res.json();
+                dispatch(setUser(data.user));
+            }
+        } catch (e) {
+            console.error('Error deleting address', e);
         }
     };
 
@@ -92,19 +158,51 @@ export default function AccountPage() {
 
                     {/* Address Box */}
                     <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                        <div className="flex items-center space-x-2 mb-6">
-                            <MapPin className="text-amber-600 w-5 h-5" />
-                            <h2 className="text-xl font-bold text-gray-900">{t('account.savedAddresses')}</h2>
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center space-x-2">
+                                <MapPin className="text-amber-600 w-5 h-5" />
+                                <h2 className="text-xl font-bold text-gray-900">{t('account.savedAddresses')}</h2>
+                            </div>
+                            {!isEditingAddress && (
+                                <button onClick={handleAddAddressClick} className="text-sm font-medium text-amber-600 hover:text-amber-800 flex items-center bg-amber-50 px-3 py-1.5 rounded-lg transition-colors">
+                                    <Plus className="w-4 h-4 mr-1" /> Add
+                                </button>
+                            )}
                         </div>
 
-                        {profile.addresses && profile.addresses.length > 0 ? (
-                            <div className="space-y-4 h-64 overflow-y-auto pr-2">
+                        {isEditingAddress ? (
+                            <form onSubmit={handleSaveAddress} className="space-y-4">
+                                <input type="text" placeholder="Full Name" required value={addrForm.fullName} onChange={(e) => setAddrForm(p => ({ ...p, fullName: e.target.value }))} className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-1 inset ring-amber-500" />
+                                <input type="text" placeholder="Street Address" required value={addrForm.street} onChange={(e) => setAddrForm(p => ({ ...p, street: e.target.value }))} className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-1 inset ring-amber-500" />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <input type="text" placeholder="City" required value={addrForm.city} onChange={(e) => setAddrForm(p => ({ ...p, city: e.target.value }))} className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-1 inset ring-amber-500" />
+                                    <input type="text" placeholder="State" required value={addrForm.state} onChange={(e) => setAddrForm(p => ({ ...p, state: e.target.value }))} className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-1 inset ring-amber-500" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <input type="text" placeholder="ZIP Code" required value={addrForm.zipCode} onChange={(e) => setAddrForm(p => ({ ...p, zipCode: e.target.value }))} className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-1 inset ring-amber-500" />
+                                    <input type="text" placeholder="Phone" required value={addrForm.phone} onChange={(e) => setAddrForm(p => ({ ...p, phone: e.target.value }))} className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-1 inset ring-amber-500" />
+                                </div>
+                                <div className="flex gap-4 pt-4">
+                                    <button type="submit" className="flex-1 bg-amber-600 text-white font-medium py-3 rounded-xl hover:bg-amber-700 transition">Save</button>
+                                    <button type="button" onClick={handleCancelAddress} className="flex-1 bg-gray-100 text-gray-700 font-medium py-3 rounded-xl hover:bg-gray-200 transition">Cancel</button>
+                                </div>
+                            </form>
+                        ) : profile.addresses && profile.addresses.length > 0 ? (
+                            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                                 {profile.addresses.map((addr: any) => (
-                                    <div key={addr._id} className="p-4 rounded-xl border border-gray-100 bg-gray-50">
+                                    <div key={addr._id} className="p-4 rounded-xl border border-gray-100 bg-gray-50 relative group">
                                         <p className="font-bold text-gray-900 text-sm mb-1">{addr.fullName}</p>
                                         <p className="text-gray-600 text-sm">{addr.street}</p>
                                         <p className="text-gray-600 text-sm">{addr.city}, {addr.state} {addr.zipCode}</p>
                                         <p className="text-gray-600 text-sm mt-1">{addr.phone}</p>
+                                        <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleEditAddress(addr)} className="text-gray-400 hover:text-amber-600 transition-colors p-1" title="Edit Address">
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => handleDeleteAddress(addr._id)} className="text-gray-400 hover:text-rose-600 transition-colors p-1" title="Delete Address">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -125,21 +223,20 @@ export default function AccountPage() {
                         {orders.length > 0 ? (
                             <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                                 {orders.map((order: any) => (
-                                    <div key={order._id} className="p-6 rounded-2xl border border-gray-100 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow">
+                                    <Link href={`/orders/${order._id}`} key={order._id} className="block p-6 rounded-2xl border border-gray-100 bg-gray-50 hover:bg-white flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm hover:shadow-md transition-all group">
                                         <div className="space-y-2">
                                             <div className="flex items-center space-x-3">
-                                                <span className="font-bold text-gray-900">{t('account.order')} #{order._id.substring(order._id.length - 6).toUpperCase()}</span>
-                                                <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                                                    order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' : 
+                                                <span className="font-bold text-gray-900 group-hover:text-amber-600 transition-colors">{t('account.order')} #{order._id.substring(order._id.length - 6).toUpperCase()}</span>
+                                                <span className={`px-3 py-1 text-xs font-bold rounded-full ${order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
                                                     order.orderStatus === 'Cancelled' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'
-                                                }`}>
+                                                    }`}>
                                                     {order.orderStatus}
                                                 </span>
                                             </div>
                                             <p className="text-sm text-gray-500">{t('account.orderDate')} {new Date(order.createdAt).toLocaleDateString()}</p>
                                             <div className="text-sm text-gray-700 mt-2">
                                                 <span className="font-medium text-gray-900">{t('account.items')} </span>
-                                                {order.items.map((i: any) => `${i.quantity}x ${i.name}`).join(', ')}
+                                                {order.items.map((i: any) => `${i.quantity}x ${i.name}${i.variationName ? ` (${i.variationName})` : ''}`).join(', ')}
                                             </div>
                                         </div>
                                         <div className="flex flex-col md:items-end space-y-2">
@@ -147,11 +244,8 @@ export default function AccountPage() {
                                                 {/* In a multi-currency app, you would format properly based on currencyAtPurchase */}
                                                 ₹{order.totalAmountINR.toLocaleString('en-IN')}
                                             </p>
-                                            <button className="text-sm font-medium text-amber-600 hover:text-amber-800 transition-colors flex items-center">
-                                                <Download className="w-4 h-4 mr-1" /> {t('account.invoice')}
-                                            </button>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         ) : (

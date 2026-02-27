@@ -7,6 +7,7 @@ import { setCartItems } from '@/store/cartSlice';
 import { setLanguage, setCurrency } from '@/store/uiSlice';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { getApiUrl } from '@/utils/apiClient';
 
 function StateSync({ children }: { children: React.ReactNode }) {
     const [isMounted, setIsMounted] = useState(false);
@@ -29,14 +30,14 @@ function StateSync({ children }: { children: React.ReactNode }) {
 
         // Intelligently hydrate User Context via HTTP-Only Cookies on app initialization.
         // If Auth succeeds, override Redux with Live DB configurations.
-        fetch('/api/auth/me')
+        fetch(getApiUrl('/api/auth/me'))
             .then(res => res.ok ? res.json() : Promise.reject('Not Auth'))
             .then(data => {
                 if (data.user) {
                     store.dispatch({ type: 'auth/setUser', payload: data.user });
 
                     // Hydrate Live DB state into Redux explicitly
-                    fetch('/api/cart').then(r => r.json()).then(c => {
+                    fetch(getApiUrl('/api/cart')).then(r => r.json()).then(c => {
                         if (c.cart && c.cart.items) {
                             // Normalize: ensure productId is a string if it was populated
                             const normalizedItems = c.cart.items.map((item: any) => ({
@@ -46,10 +47,10 @@ function StateSync({ children }: { children: React.ReactNode }) {
                             store.dispatch(setCartItems(normalizedItems));
                         }
                     });
-                    fetch('/api/wishlist').then(r => r.json()).then(w => {
+                    fetch(getApiUrl('/api/wishlist')).then(r => r.json()).then(w => {
                         if (w.wishlist && w.wishlist.products) {
                             // Normalize: ensure each product is just a string ID
-                            const normalizedProducts = w.wishlist.products.map((p: any) => 
+                            const normalizedProducts = w.wishlist.products.map((p: any) =>
                                 typeof p === 'object' ? p._id : p
                             );
                             store.dispatch({ type: 'wishlist/setWishlistItems', payload: normalizedProducts });

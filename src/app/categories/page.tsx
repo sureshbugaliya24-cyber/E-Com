@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 const categories = [
     { name: 'Necklaces', count: '10+', image: 'https://images.unsplash.com/photo-1599643478514-4a4e09f52f5e?q=80&w=800&auto=format&fit=crop' },
@@ -16,6 +17,7 @@ const categories = [
 export default function CategoriesIndexPage() {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <Breadcrumbs items={[{ label: 'Categories' }]} />
             <h1 className="text-4xl font-serif font-bold text-gray-900 mb-4 border-b-2 border-amber-600 inline-block pb-2">Shop by Category</h1>
             <p className="text-gray-600 mb-12 max-w-2xl text-lg">Browse our expansive inventory categorized explicitly for an effortless shopping experience.</p>
 

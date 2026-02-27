@@ -7,6 +7,8 @@ import { RootState } from '@/store/store';
 import { ShoppingBag, MapPin, CreditCard, ChevronRight, Plus, Check } from 'lucide-react';
 import { formatCurrency, convertCurrency } from '@/utils/currency';
 import { useTranslation } from '@/hooks/useTranslation';
+import { getApiUrl } from '@/utils/apiClient';
+import { setCartItems } from '@/store/cartSlice';
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -42,7 +44,7 @@ export default function CheckoutPage() {
     const fetchCartDetails = async () => {
         try {
             // We'll hit the cart API to get the populated products
-            const res = await fetch('/api/cart', {
+            const res = await fetch(getApiUrl('/api/cart'), {
                 headers: { 'Cache-Control': 'no-cache' }
             });
             const data = await res.json();
@@ -61,20 +63,20 @@ export default function CheckoutPage() {
     const handleAddAddress = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch('/api/user/address', {
+            const res = await fetch(getApiUrl('/api/user/address'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newAddr)
             });
             if (res.ok) {
                 const data = await res.json();
-                
+
                 // Update local state
                 setAddresses(data.user.addresses);
-                
+
                 // CRITICAL: Update Redux state so other pages/refreshes have the latest data
                 dispatch({ type: 'auth/setUser', payload: data.user });
-                
+
                 setShowAddressForm(false);
                 setNewAddr({ fullName: '', street: '', city: '', state: '', zipCode: '', country: '', phone: '' });
             }
@@ -88,7 +90,7 @@ export default function CheckoutPage() {
         if (cartDetails.length === 0) return alert('Your cart is empty');
 
         try {
-            const res = await fetch('/api/orders', {
+            const res = await fetch(getApiUrl('/api/orders'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

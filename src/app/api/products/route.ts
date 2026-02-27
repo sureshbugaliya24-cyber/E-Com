@@ -12,6 +12,10 @@ export async function GET(req: Request) {
         const isFeatured = url.searchParams.get('isFeatured');
         const search = url.searchParams.get('search');
         const ids = url.searchParams.get('ids');
+        const size = url.searchParams.get('size');
+        const purity = url.searchParams.get('purity');
+        const minPrice = url.searchParams.get('minPrice');
+        const maxPrice = url.searchParams.get('maxPrice');
 
         if (ids) {
             const idsArray = ids.split(',');
@@ -25,22 +29,70 @@ export async function GET(req: Request) {
         const skip = (page - 1) * limit;
 
         const query: any = {};
+        const andConditions: any[] = [];
+
         if (category) query.category = category;
         if (isFeatured === 'true') query.isFeatured = true;
 
-        // Optional search logic if needed
         if (search) {
-            query.$or = [
-                { 'name.en': { $regex: search, $options: 'i' } },
-                { 'description.en': { $regex: search, $options: 'i' } }
-            ];
+            andConditions.push({
+                $or: [
+                    { 'name.en': { $regex: search, $options: 'i' } },
+                    { 'description.en': { $regex: search, $options: 'i' } }
+                ]
+            });
+        }
+
+        const variationMatch: any = {};
+        let hasVariationFilters = false;
+
+        const variationQueries: any[] = [];
+
+        if (size) {
+            const sizes = size.split(',');
+            variationQueries.push({ 'attributes.Size': { $in: sizes } });
+            hasVariationFilters = true;
+        }
+        if (purity) {
+            const purities = purity.split(',');
+            variationQueries.push({ 'attributes.Purity': { $in: purities } });
+            hasVariationFilters = true;
+        }
+
+        if (variationQueries.length > 0) {
+            variationMatch.$and = variationQueries;
+        }
+
+        if (minPrice || maxPrice) {
+            const priceQ: any = {};
+            if (minPrice) priceQ.$gte = Number(minPrice);
+            if (maxPrice) priceQ.$lte = Number(maxPrice);
+
+            if (hasVariationFilters) {
+                variationMatch.priceINR = priceQ;
+                andConditions.push({ variations: { $elemMatch: variationMatch } });
+            } else {
+                andConditions.push({
+                    $or: [
+                        { basePriceINR: priceQ },
+                        { variations: { $elemMatch: { priceINR: priceQ } } }
+                    ]
+                });
+            }
+        } else if (hasVariationFilters) {
+            andConditions.push({ variations: { $elemMatch: variationMatch } });
+        }
+
+        if (andConditions.length > 0) {
+            query.$and = andConditions;
         }
 
         const totalCount = await Product.countDocuments(query);
         const products = await Product.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .lean(); // Lean for faster performance with Maps
 
         const hasMore = totalCount > skip + products.length;
 

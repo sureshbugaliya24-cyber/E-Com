@@ -34,8 +34,19 @@ export async function POST(req: Request) {
         const orderItems = cart.items.map((item: any) => {
             const product = item.productId;
             if (!product) return null;
-            
-            totalAmountINR += (product.basePriceINR * item.quantity);
+
+            let itemPrice = product.basePriceINR;
+            let itemImage = product.images && product.images.length > 0 ? product.images[0] : '';
+
+            if (item.variationName && product.variations) {
+                const variation = product.variations.find((v: any) => v.name === item.variationName || v.sku === item.variationName);
+                if (variation) {
+                    if (variation.priceINR != null) itemPrice = variation.priceINR;
+                    if (variation.images && variation.images.length > 0) itemImage = variation.images[0];
+                }
+            }
+
+            totalAmountINR += (itemPrice * item.quantity);
 
             // Extract string from bilingual name object
             const productName = typeof product.name === 'object' && product.name !== null
@@ -45,8 +56,10 @@ export async function POST(req: Request) {
             return {
                 product: product._id,
                 quantity: item.quantity,
-                price: product.basePriceINR,
-                name: String(productName)
+                price: itemPrice,
+                name: String(productName),
+                variationName: item.variationName,
+                image: itemImage,
             };
         }).filter((i: any) => i !== null);
 
@@ -68,7 +81,13 @@ export async function POST(req: Request) {
             totalAmountINR,
             currencyAtPurchase: currency,
             paymentStatus: 'Pending', // Assuming Cash On Delivery for now
-            orderStatus: 'Processing'
+            orderStatus: 'Processing',
+            trackingTimeline: [
+                { status: 'Order Placed', date: new Date(), description: 'Your order has been received by Radhey Jewellers.', isCompleted: true },
+                { status: 'Processing', date: new Date(), description: 'We are preparing your order for shipment.', isCompleted: false },
+                { status: 'Shipped', date: new Date(), description: 'Your order has been dispatched.', isCompleted: false },
+                { status: 'Delivered', date: new Date(), description: 'Order delivered successfully.', isCompleted: false }
+            ]
         });
 
         // Empty the DB Cart

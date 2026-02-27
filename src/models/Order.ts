@@ -5,6 +5,8 @@ export interface IOrderItem {
     quantity: number;
     price: number; // Snapshot of price at time of purchase
     name: string; // Snapshot of product name
+    variationName?: string; // name of the variation
+    image?: string; // snapshot of product/variation image
 }
 
 export interface IOrder extends Document {
@@ -23,6 +25,12 @@ export interface IOrder extends Document {
     currencyAtPurchase: string;
     paymentStatus: 'Pending' | 'Paid' | 'Failed';
     orderStatus: 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+    trackingTimeline: {
+        status: string;
+        date: Date;
+        description?: string;
+        isCompleted: boolean;
+    }[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -32,6 +40,8 @@ const OrderItemSchema = new Schema<IOrderItem>({
     quantity: { type: Number, required: true, min: 1 },
     price: { type: Number, required: true },
     name: { type: String, required: true },
+    variationName: { type: String, required: false },
+    image: { type: String, required: false },
 });
 
 const OrderSchema: Schema = new Schema(
@@ -51,6 +61,12 @@ const OrderSchema: Schema = new Schema(
         currencyAtPurchase: { type: String, default: 'INR' },
         paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Failed'], default: 'Pending' },
         orderStatus: { type: String, enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled'], default: 'Processing' },
+        trackingTimeline: [{
+            status: { type: String, required: true },
+            date: { type: Date, required: true },
+            description: { type: String },
+            isCompleted: { type: Boolean, default: false }
+        }],
     },
     { timestamps: true }
 );

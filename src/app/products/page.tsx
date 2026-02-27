@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import ProductCard from '@/components/ProductCard';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { IProduct } from '@/models/Product';
 import { Search, SlidersHorizontal, ChevronDown, Loader2 } from 'lucide-react';
+import { getApiUrl } from '@/utils/apiClient';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<IProduct[]>([]);
@@ -17,6 +19,15 @@ export default function ProductsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchInput, setSearchInput] = useState(''); // for the input field before enter/debounce
     const [categoryFilter, setCategoryFilter] = useState('All');
+
+    // Variant Deep Filters
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+    const [selectedPurities, setSelectedPurities] = useState<string[]>([]);
+    const [minPrice, setMinPrice] = useState<string>('');
+    const [maxPrice, setMaxPrice] = useState<string>('');
+    const [appliedMinPrice, setAppliedMinPrice] = useState<string>('');
+    const [appliedMaxPrice, setAppliedMaxPrice] = useState<string>('');
     // We didn't build server-side sort, but we can manage basic filters matching the API
 
     const observer = useRef<IntersectionObserver | null>(null);
@@ -44,8 +55,12 @@ export default function ProductsPage() {
 
             if (categoryFilter !== 'All') params.append('category', categoryFilter);
             if (searchQuery) params.append('search', searchQuery);
+            if (selectedSizes.length > 0) params.append('size', selectedSizes.join(','));
+            if (selectedPurities.length > 0) params.append('purity', selectedPurities.join(','));
+            if (appliedMinPrice) params.append('minPrice', appliedMinPrice);
+            if (appliedMaxPrice) params.append('maxPrice', appliedMaxPrice);
 
-            const res = await fetch(`/api/products?${params.toString()}`);
+            const res = await fetch(getApiUrl(`/api/products?${params.toString()}`));
             const data = await res.json();
 
             if (data.products) {
@@ -66,7 +81,7 @@ export default function ProductsPage() {
         setPage(1);
         fetchProducts(1, true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [categoryFilter, searchQuery]);
+    }, [categoryFilter, searchQuery, selectedSizes, selectedPurities, appliedMinPrice, appliedMaxPrice]);
 
     // When page increments (from infinite scroll), append data
     useEffect(() => {
@@ -90,7 +105,7 @@ export default function ProductsPage() {
             </h1>
 
             {/* Filter and Search Bar Row */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-10 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
                 {/* Search */}
                 <form onSubmit={handleSearchSubmit} className="relative w-full md:w-96">
                     <input
@@ -103,9 +118,16 @@ export default function ProductsPage() {
                     <Search className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
                 </form>
 
-                <div className="flex w-full md:w-auto gap-4 items-center overflow-x-auto pb-2 md:pb-0">
+                <div className="flex w-full md:w-auto gap-4 items-center">
+                    <button
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                        className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-amber-600 transition-colors"
+                    >
+                        <SlidersHorizontal className="w-5 h-5" />
+                        Filters
+                    </button>
                     {/* Category Filter */}
-                    <div className="relative min-w-[200px]">
+                    <div className="relative min-w-[160px]">
                         <select
                             value={categoryFilter}
                             onChange={(e) => setCategoryFilter(e.target.value)}
@@ -118,6 +140,66 @@ export default function ProductsPage() {
                 </div>
             </div>
 
+            {/* Expandable Advanced Filters */}
+            {isFilterOpen && (
+                <div className="mb-10 p-6 bg-white border border-gray-100 rounded-2xl shadow-sm grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 className="font-semibold text-gray-900 mb-3">Purity / Metal</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {['14K', '18K', '22K', '24K'].map(purity => (
+                                <button
+                                    key={purity}
+                                    onClick={() => setSelectedPurities(prev => prev.includes(purity) ? prev.filter(p => p !== purity) : [...prev, purity])}
+                                    className={`px-3 py-1.5 border rounded-lg text-sm transition-colors ${selectedPurities.includes(purity) ? 'bg-amber-50 border-amber-600 text-amber-700' : 'bg-white border-gray-200 text-gray-600 hover:border-amber-300'}`}
+                                >
+                                    {purity}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-gray-900 mb-3">Size Options</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {['8', '10', '12', '14', '16', '18', '20', 'S', 'M', 'L'].map(size => (
+                                <button
+                                    key={size}
+                                    onClick={() => setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size])}
+                                    className={`px-3 py-1.5 border rounded-lg text-sm transition-colors ${selectedSizes.includes(size) ? 'bg-amber-50 border-amber-600 text-amber-700' : 'bg-white border-gray-200 text-gray-600 hover:border-amber-300'}`}
+                                >
+                                    {size}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-gray-900 mb-3">Price Range (INR)</h3>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="number"
+                                placeholder="Min"
+                                value={minPrice}
+                                onChange={e => setMinPrice(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                            />
+                            <span className="text-gray-400">-</span>
+                            <input
+                                type="number"
+                                placeholder="Max"
+                                value={maxPrice}
+                                onChange={e => setMaxPrice(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                            />
+                            <button
+                                onClick={() => { setAppliedMinPrice(minPrice); setAppliedMaxPrice(maxPrice); }}
+                                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
+                            >
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Product Grid */}
             {loading ? (
                 <div className="flex justify-center items-center h-64 border border-gray-100 rounded-3xl bg-white shadow-sm mt-8">
@@ -127,10 +209,13 @@ export default function ProductsPage() {
                 <div className="text-center py-20 bg-gray-50 rounded-2xl border border-gray-100">
                     <p className="text-xl text-gray-600 font-medium">No jewellery matched your filters.</p>
                     <button
-                        onClick={() => { setSearchInput(''); setSearchQuery(''); setCategoryFilter('All'); }}
+                        onClick={() => {
+                            setSearchInput(''); setSearchQuery(''); setCategoryFilter('All');
+                            setSelectedSizes([]); setSelectedPurities([]); setMinPrice(''); setMaxPrice(''); setAppliedMinPrice(''); setAppliedMaxPrice('');
+                        }}
                         className="mt-4 text-amber-600 hover:underline font-medium"
                     >
-                        Clear Filters
+                        Clear All Filters
                     </button>
                 </div>
             ) : (

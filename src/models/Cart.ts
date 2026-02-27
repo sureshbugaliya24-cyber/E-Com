@@ -4,6 +4,7 @@ export interface ICart extends Document {
     userId: mongoose.Types.ObjectId;
     items: {
         productId: mongoose.Types.ObjectId;
+        variationName?: string;
         quantity: number;
     }[];
 }
@@ -14,6 +15,7 @@ const CartSchema: Schema = new Schema(
         items: [
             {
                 productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+                variationName: { type: String, required: false },
                 quantity: { type: Number, required: true, min: 1, default: 1 },
             },
         ],

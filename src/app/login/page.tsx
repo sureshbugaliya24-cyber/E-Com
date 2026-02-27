@@ -7,6 +7,7 @@ import { setUser } from '@/store/authSlice';
 import { setCartItems } from '@/store/cartSlice';
 import { setWishlistItems } from '@/store/wishlistSlice';
 import Link from 'next/link';
+import { getApiUrl } from '@/utils/apiClient';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -43,7 +44,7 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const res = await fetch('/api/auth/login', {
+            const res = await fetch(getApiUrl('/api/auth/login'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -56,7 +57,7 @@ export default function LoginPage() {
 
             // --- Post-Login Store Sync ---
             try {
-                const syncRes = await fetch('/api/auth/sync', {
+                const syncRes = await fetch(getApiUrl('/api/auth/sync'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cartItems, wishlistItems }),

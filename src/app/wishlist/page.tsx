@@ -10,6 +10,7 @@ import { toggleWishlist } from '@/store/wishlistSlice';
 import { Heart, ShoppingBag, Trash2 } from 'lucide-react';
 import { addToCart } from '@/store/cartSlice';
 import { useTranslation } from '@/hooks/useTranslation';
+import { getApiUrl } from '@/utils/apiClient';
 
 export default function WishlistPage() {
     const dispatch = useDispatch();
@@ -31,7 +32,7 @@ export default function WishlistPage() {
             }
             try {
                 const ids = wishlistItems.join(',');
-                const res = await fetch(`/api/products?ids=${ids}`);
+                const res = await fetch(getApiUrl(`/api/products?ids=${ids}`));
                 const data = await res.json();
                 if (data.products) {
                     setProducts(data.products);
@@ -51,7 +52,7 @@ export default function WishlistPage() {
         dispatch(toggleWishlist(productId));
 
         try {
-            await fetch('/api/wishlist', {
+            await fetch(getApiUrl('/api/wishlist'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ productId })
@@ -71,7 +72,7 @@ export default function WishlistPage() {
         }, 2500);
 
         try {
-            await fetch('/api/cart', {
+            await fetch(getApiUrl('/api/cart'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ productId, quantity: 1 }),
