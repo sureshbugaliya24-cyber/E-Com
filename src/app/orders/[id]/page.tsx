@@ -6,6 +6,8 @@ import { Package, ArrowLeft, Download, CheckCircle, Clock } from 'lucide-react';
 import { getApiUrl } from '@/utils/apiClient';
 import Link from 'next/link';
 import Image from 'next/image';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function OrderDetailsPage() {
     const params = useParams();
@@ -42,6 +44,64 @@ export default function OrderDetailsPage() {
         </div>
     );
 
+    const timeline = (() => {
+        if (!order?.trackingTimeline) return [];
+        const t = [...order.trackingTimeline];
+        if (!t.some(s => s.status.toLowerCase() === 'return')) {
+            const lastDate = t.length > 0 && t[t.length - 1]?.date ? new Date(t[t.length - 1].date) : new Date();
+            const retDate = new Date(lastDate);
+            retDate.setDate(retDate.getDate() + 1);
+            t.push({ status: 'Return', date: retDate, description: '', isCompleted: false });
+        }
+        return t;
+    })();
+
+    const handleDownloadInvoice = () => {
+        if (!order) return;
+        const doc = new jsPDF();
+
+        doc.setFontSize(22);
+        doc.text("Radhey Jewellers - Invoice", 14, 22);
+
+        doc.setFontSize(12);
+        doc.text(`Order ID: #${order._id.substring(order._id.length - 8).toUpperCase()}`, 14, 32);
+        doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 14, 38);
+        doc.text(`Payment Status: ${order.paymentStatus}`, 14, 44);
+
+        doc.text("Shipping Address:", 14, 54);
+        doc.setFontSize(10);
+        doc.text(`${order.shippingAddress.fullName}`, 14, 60);
+        doc.text(`${order.shippingAddress.street}`, 14, 65);
+        doc.text(`${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}`, 14, 70);
+
+        const tableColumn = ["Item Name", "Variation", "Quantity", "Price"];
+        const tableRows: any[] = [];
+
+        order.items.forEach((item: any) => {
+            const itemData = [
+                item.name,
+                item.variationName || "-",
+                item.quantity,
+                `Rs. ${item.price.toLocaleString('en-IN')}`
+            ];
+            tableRows.push(itemData);
+        });
+
+        autoTable(doc, {
+            startY: 80,
+            head: [tableColumn],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [245, 158, 11] }
+        });
+
+        const finalY = (doc as any).lastAutoTable.finalY || 80;
+        doc.setFontSize(12);
+        doc.text(`Total Amount: Rs. ${order.totalAmountINR.toLocaleString('en-IN')}`, 14, finalY + 10);
+
+        doc.save(`Invoice_${order._id.substring(order._id.length - 8).toUpperCase()}.pdf`);
+    };
+
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen bg-gray-50">
             <Link href="/account" className="inline-flex items-center text-amber-600 hover:text-amber-800 font-medium mb-8 group">
@@ -54,7 +114,7 @@ export default function OrderDetailsPage() {
                         <h1 className="text-2xl font-bold text-gray-900">Order #{order._id.substring(order._id.length - 8).toUpperCase()}</h1>
                         <p className="text-gray-500 mt-1">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
                     </div>
-                    <button className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm cursor-not-allowed opacity-50">
+                    <button onClick={handleDownloadInvoice} className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
                         <Download className="w-4 h-4 mr-2" /> Download Invoice
                     </button>
                 </div>
@@ -66,21 +126,36 @@ export default function OrderDetailsPage() {
                         <div className="relative">
                             <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                             <div className="space-y-8 relative">
-                                {order.trackingTimeline && order.trackingTimeline.map((step: any, idx: number) => {
+                                {timeline.map((step: any, idx: number) => {
                                     const isCompleted = step.isCompleted;
+                                    const nextStep = timeline[idx + 1];
+                                    const isActive = isCompleted && (!nextStep || !nextStep.isCompleted);
+                                    const isPastCompleted = isCompleted && !isActive;
+                                    const isReturnNode = step.status === 'Return';
+
                                     return (
-                                        <div key={idx} className="flex gap-4">
-                                            <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center bg-white border-2 ${isCompleted ? 'border-amber-500' : 'border-gray-200'}`}>
-                                                {isCompleted ? <CheckCircle className="w-5 h-5 text-amber-500" /> : <Clock className="w-4 h-4 text-gray-300" />}
+                                        <div key={idx} className="flex gap-6">
+                                            <div className="relative flex flex-col items-center w-8">
+                                                <div className={`relative z-10 flex items-center justify-center shrink-0 bg-gray-50
+                                                    ${isReturnNode ? 'w-6 h-6 rounded-lg bg-gray-300 mt-1' : ''}
+                                                    ${isPastCompleted && !isReturnNode ? 'w-6 h-6 rounded-full border-[4px] border-green-700 mt-1 bg-white' : ''}
+                                                    ${isActive && !isReturnNode ? 'w-7 h-7 rounded-full border-[4px] border-gray-400 shadow-sm mt-0.5 bg-white' : ''}
+                                                    ${!isCompleted && !isReturnNode ? 'w-5 h-5 rounded-lg bg-gray-300 mt-1.5' : ''}
+                                                `}>
+                                                    {isActive && !isReturnNode && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full"></div>}
+                                                </div>
+
                                                 {/* Connect line highlight */}
-                                                {isCompleted && idx !== order.trackingTimeline.length - 1 && (
-                                                    <div className="absolute top-8 left-1/2 -translate-x-1/2 w-0.5 h-8 bg-amber-500"></div>
+                                                {idx !== timeline.length - 1 && (
+                                                    <div className={`w-[3px] flex-1 my-1.5 rounded-full ${isPastCompleted ? 'bg-green-700' : 'bg-gray-200'}`}></div>
                                                 )}
                                             </div>
-                                            <div className="flex-1 pb-2">
-                                                <h3 className={`font-bold ${isCompleted ? 'text-gray-900' : 'text-gray-400'}`}>{step.status}</h3>
-                                                <p className="text-sm text-gray-500 mt-1">{step.description}</p>
-                                                {isCompleted && <p className="text-xs text-gray-400 mt-1">{new Date(step.date).toLocaleString()}</p>}
+                                            <div className="flex-1 pb-10 -mt-1">
+                                                <h3 className={`font-bold text-base tracking-wide ${isCompleted ? 'text-gray-900' : 'text-gray-800'}`}>{step.status}</h3>
+                                                {step.date && <p className="text-[13px] mt-0.5 text-gray-500 font-medium">
+                                                    {new Date(step.date).toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', year: '2-digit', hour: 'numeric', minute: '2-digit' })}
+                                                </p>}
+                                                {step.description && !step.date && <p className="text-[13px] mt-0.5 text-gray-400">{step.description}</p>}
                                             </div>
                                         </div>
                                     )

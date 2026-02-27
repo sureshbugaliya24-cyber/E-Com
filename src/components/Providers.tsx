@@ -42,7 +42,8 @@ function StateSync({ children }: { children: React.ReactNode }) {
                             // Normalize: ensure productId is a string if it was populated
                             const normalizedItems = c.cart.items.map((item: any) => ({
                                 productId: typeof item.productId === 'object' ? item.productId._id : item.productId,
-                                quantity: item.quantity
+                                quantity: item.quantity,
+                                variationName: item.variationName
                             }));
                             store.dispatch(setCartItems(normalizedItems));
                         }

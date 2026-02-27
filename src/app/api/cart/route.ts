@@ -20,9 +20,17 @@ export async function GET() {
             return NextResponse.json({ cart: { items: [] } }, { status: 200 });
         }
 
+        // Cull items where the product no longer exists in DB (e.g. wiped by seeder)
+        const validItems = cart.items.filter((item: any) => item.productId !== null);
+
+        if (validItems.length !== cart.items.length) {
+            cart.items = validItems;
+            await cart.save();
+        }
+
         // Transform items to have both ID and populated object
         // This satisfies both Redux (needs ID) and Checkout (needs Object)
-        const formattedItems = cart.items.map((item: any) => ({
+        const formattedItems = validItems.map((item: any) => ({
             productId: item.productId._id,
             product: item.productId,
             variationName: item.variationName,

@@ -29,11 +29,11 @@ export async function POST(req: Request) {
             const productExists = await Product.exists({ _id: item.productId });
             if (!productExists) continue;
 
-            const existingIndex = cart.items.findIndex((p: any) => p.productId.toString() === item.productId);
+            const existingIndex = cart.items.findIndex((p: any) => p.productId.toString() === item.productId && p.variationName === item.variationName);
             if (existingIndex > -1) {
                 cart.items[existingIndex].quantity += item.quantity;
             } else {
-                cart.items.push({ productId: item.productId, quantity: item.quantity });
+                cart.items.push({ productId: item.productId, quantity: item.quantity, variationName: item.variationName });
             }
         }
         await cart.save();
@@ -55,10 +55,21 @@ export async function POST(req: Request) {
         await wishlist.save();
 
         // --- Fetch and Return Unified State ---
-        const unifiedCartRaw = cart.items;
+        await cart.populate('items.productId');
+        const validCartItems = cart.items.filter((item: any) => item.productId !== null);
+
+        if (validCartItems.length !== cart.items.length) {
+            cart.items = validCartItems;
+            await cart.save();
+        }
+
         const unifiedWishlistRaw = wishlist.products;
 
-        const unifiedCart = unifiedCartRaw.map((c: any) => ({ productId: String(c.productId), quantity: c.quantity }));
+        const unifiedCart = validCartItems.map((c: any) => ({
+            productId: typeof c.productId === 'object' ? String(c.productId._id) : String(c.productId),
+            quantity: c.quantity,
+            variationName: c.variationName
+        }));
         const unifiedWishlist = unifiedWishlistRaw.map((w: any) => String(w));
 
         return NextResponse.json({
